@@ -1,13 +1,13 @@
-package com.icesi.microservicio_clase;
+package com.icesi.microservicio_miembro;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MicroservicioClaseApplication {
+public class MicroservicioMiembroApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MicroservicioClaseApplication.class, args);
+		SpringApplication.run(MicroservicioMiembroApplication.class, args);
 	}
 
 }

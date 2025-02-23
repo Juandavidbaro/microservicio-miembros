@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.icesi</groupId>
-	<artifactId>microservicio-clase</artifactId>
+	<artifactId>microservicio-miembro</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>microservicio-clase</name>
 	<description>Microservice for Classes - Gym project</description>
