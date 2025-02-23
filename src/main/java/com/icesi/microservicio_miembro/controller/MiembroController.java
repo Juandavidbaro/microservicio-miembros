@@ -14,12 +14,12 @@ public class MiembroController {
     @Autowired
     private MiembroService miembroService;
 
-    @PostMapping
+    @PostMapping("/add")
     public Miembro registrarMiembro(@RequestBody Miembro miembro) {
         return miembroService.registrarMiembro(miembro);
     }
 
-    @GetMapping
+    @GetMapping("/get")
     public List<Miembro> obtenerTodosMiembros() {
         return miembroService.obtenerTodosMiembros();
     }
