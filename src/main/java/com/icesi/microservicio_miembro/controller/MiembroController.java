@@ -2,6 +2,7 @@ package com.icesi.microservicio_miembro.controller;
 
 import com.icesi.microservicio_miembro.model.Miembro;
 import com.icesi.microservicio_miembro.service.MiembroService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/miembros")
+@Tag(name = "Clase", description = "API para la gestión de miembros")
 public class MiembroController {
 
     @Autowired

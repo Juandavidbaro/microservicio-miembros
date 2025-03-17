@@ -2,10 +2,7 @@ package com.icesi.microservicio_miembro.service;
 
 import com.icesi.microservicio_miembro.model.Miembro;
 import com.icesi.microservicio_miembro.repository.MiembroRepository;
-import com.icesi.microservicio_miembro.config.RabbitMQConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,26 +10,18 @@ import java.util.Optional;
 
 @Service
 public class MiembroService {
-    @Autowired
-    private MiembroRepository miembroRepository;
+    private final MiembroRepository miembroRepository;
+    private final RabbitTemplate rabbitTemplate;
 
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
-
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-
-    private static final String MIEMBROS_TOPIC = "miembros-events";
+    public MiembroService(MiembroRepository miembroRepository, RabbitTemplate rabbitTemplate) {
+        this.miembroRepository = miembroRepository;
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     public Miembro registrarMiembro(Miembro miembro) {
         Miembro nuevoMiembro = miembroRepository.save(miembro);
-
-        String rabbitMsg = "Nuevo miembro registrado: " + nuevoMiembro.getId();
-        rabbitTemplate.convertAndSend("notificaciones-queue", rabbitMsg);
-
-        String kafkaMsg = "Miembro agregado - ID: " + nuevoMiembro.getId() + ", Nombre: " + nuevoMiembro.getNombre();
-        kafkaTemplate.send(MIEMBROS_TOPIC, kafkaMsg);
-
+        String mensaje = "Nuevo miembro registrado: ID " + nuevoMiembro.getId();
+        rabbitTemplate.convertAndSend("notificaciones-queue", mensaje);
         return nuevoMiembro;
     }
 
@@ -45,28 +34,25 @@ public class MiembroService {
     }
 
     public Miembro actualizarMiembro(Long id, Miembro miembroActualizado) {
-        Optional<Miembro> existente = miembroRepository.findById(id);
-        if (existente.isPresent()) {
-            Miembro miembro = existente.get();
+        return miembroRepository.findById(id).map(miembro -> {
             miembro.setNombre(miembroActualizado.getNombre());
             miembro.setEmail(miembroActualizado.getEmail());
 
-            String kafkaMsg = "Miembro actualizado - ID: " + miembro.getId() + ", Nombre: " + miembro.getNombre();
-            kafkaTemplate.send(MIEMBROS_TOPIC, kafkaMsg);
+            Miembro actualizado = miembroRepository.save(miembro);
+            String mensaje = "Miembro actualizado: ID " + actualizado.getId();
+            rabbitTemplate.convertAndSend("notificaciones-queue", mensaje);
 
-            return miembroRepository.save(miembro);
-        }
-        throw new RuntimeException("Miembro no encontrado con id: " + id);
+            return actualizado;
+        }).orElseThrow(() -> new IllegalArgumentException("Miembro no encontrado con ID: " + id));
     }
 
     public void eliminarMiembro(Long id) {
         if (miembroRepository.existsById(id)) {
             miembroRepository.deleteById(id);
-
-            String kafkaMsg = "Miembro eliminado - ID " + id;
-            kafkaTemplate.send(MIEMBROS_TOPIC, kafkaMsg);
+            String mensaje = "Miembro eliminado: ID " + id;
+            rabbitTemplate.convertAndSend("notificaciones-queue", mensaje);
         } else {
-            throw new RuntimeException("Miembro no encontrado con id: " + id);
+            throw new IllegalArgumentException("Miembro no encontrado con ID: " + id);
         }
     }
 }
